@@ -6,6 +6,7 @@ from tensorflow.keras.losses import BinaryCrossentropy
 from parameters import CHILD_NETWORK_BATCH_SIZE, CHILD_NETWORK_EPOCHS, CHILD_NETWORK_LEARNING_RATE, CHILD_NETWORK_LEARNING_RATE_DECAY, CHILD_NETWORK_LEARNING_RATE_MOMENTUM, DATASET_DIR, IMG_SIZE
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 
 
 class ChildTrainer:
@@ -151,7 +152,14 @@ class ChildTrainer:
 
         """ Compile model with optimizer and loss function """
         cross_entropy = BinaryCrossentropy(from_logits=False)
-        optimizer = SGD(learning_rate=CHILD_NETWORK_LEARNING_RATE, momentum=CHILD_NETWORK_LEARNING_RATE_MOMENTUM, decay=CHILD_NETWORK_LEARNING_RATE_DECAY)
+        # Use learning rate schedule instead of deprecated 'decay' parameter
+        lr_schedule = ExponentialDecay(
+            initial_learning_rate=CHILD_NETWORK_LEARNING_RATE,
+            decay_steps=1000,
+            decay_rate=CHILD_NETWORK_LEARNING_RATE_DECAY,
+            staircase=True
+        )
+        optimizer = SGD(learning_rate=lr_schedule, momentum=CHILD_NETWORK_LEARNING_RATE_MOMENTUM)
         model.compile(optimizer=optimizer, loss=cross_entropy, metrics=['accuracy'])
 
         early_stopping = EarlyStopping(
@@ -178,7 +186,12 @@ class ChildTrainer:
             verbose=1
         )
 
-        weights = model.get_weights()
+        # The reward for each architecture is the cube of the maximum validation accuracy from the last five epochs as in Zoph and Le (2017)
+        val_accuracies = history.history.get('val_accuracy', [])
+        if len(val_accuracies) >= 5:
+            max_val_acc = max(val_accuracies[-5:])
+        else:
+            max_val_acc = max(val_accuracies) if val_accuracies else 0.0
+        reward = max_val_acc ** 3
         
-        return test_accuracy * 100.00, weights
-
+        return reward, model.get_weights()

@@ -26,6 +26,10 @@ MOTIF_REPETITIONS = 3
 POLICY_NETWORK_UNITS = 35 # Zoph and Le (2017)
 POLICY_NETWORK_LEARNING_RATE = 6e-4  # Zoph and Le (2017)
 POLICY_TEMPERATURE_DECAY = 0.995  # Exponential decay per episode
+# Initial baseline in case reward=accuracy (mock training)
+# POLICY_NETWORK_INITIAL_BASELINE = 0.65
+# Initial baseline in case reward is the cube of the best validation accuracy (as in Zoph and Le 2017)
+POLICY_NETWORK_INITIAL_BASELINE = 0.65**3
 
 ACTOR_TRINING_BATCH_SIZE=7
 

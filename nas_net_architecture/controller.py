@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import numpy as np
 from tensorflow.keras import layers, Model
-from parameters import HIDDEN_STATE_OPERATIONS, POLICY_NETWORK_LEARNING_RATE, B, POLICY_NETWORK_UNITS, POLICY_TEMPERATURE_DECAY
+from parameters import HIDDEN_STATE_OPERATIONS, POLICY_NETWORK_INITIAL_BASELINE, POLICY_NETWORK_LEARNING_RATE, B, POLICY_NETWORK_UNITS, POLICY_TEMPERATURE_DECAY
 
 
 class SimpleNASController:
@@ -101,7 +101,7 @@ class SimpleNASController:
             # Use the highest of these to prevent baseline from dropping too much
             baseline = max(recent_mean, historical_mean, best_baseline)
         else:
-            baseline = 0.65
+            baseline = POLICY_NETWORK_INITIAL_BASELINE
         
         # Difference = reward - baseline (positive for good episodes)
         difference = final_reward - baseline

@@ -47,8 +47,8 @@ def run_nas_net():
 
         # Evaluate the complete architecture (mock or real training)
         model = build_child_network(normal_cell, reduction_cell, B)
-        reward = trainer.mock_train_and_evaluate_child_network(actions)
-        #reward, _ = trainer.train_and_evaluate_child_network(model)
+        # reward = trainer.mock_train_and_evaluate_child_network(actions)
+        reward, _ = trainer.train_and_evaluate_child_network(model)
         
         # Store all transitions with the final reward (REINFORCE principle)
         for stage in range(2 * B * 5):
